@@ -748,7 +748,7 @@ def pagina_registrazione():
             paese = st.selectbox("Country / Pays / Paese", 
                 ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", "Altro / Other"],
                 index=0)
-        if paese == "Sénégal":
+            if paese == "Sénégal":
                 dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
                     get_testo("thies", st.session_state.lingua),
                     get_testo("tivaouane", st.session_state.lingua),
@@ -757,8 +757,9 @@ def pagina_registrazione():
                     "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
                     get_testo("altro", st.session_state.lingua)
                 ])
-        else:
-                dipartimento = st.text_input("Department / Region / Region")
+            else:
+                regione_straniera = st.text_input("Department / Region / Region")
+                dipartimento = f"{paese} - {regione_straniera}"
             telefono = st.text_input(get_testo("telefono", st.session_state.lingua))
             telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua))
             cni = st.text_input(get_testo("cni", st.session_state.lingua))
