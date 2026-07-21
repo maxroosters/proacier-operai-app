@@ -713,7 +713,7 @@ def pagina_registrazione():
     with st.form("form_registrazione", clear_on_submit=False):
         col1, col2 = st.columns(2)
         
-    with col2:
+        with col2:
             st.subheader(get_testo("documenti", st.session_state.lingua))
             indirizzo = st.text_input(get_testo("indirizzo", st.session_state.lingua))
             quartiere = st.text_input(get_testo("quartiere", st.session_state.lingua))
@@ -731,13 +731,13 @@ def pagina_registrazione():
                     get_testo("altro", st.session_state.lingua)
                 ])
             else:
-                dipartimento = st.text_input("Department / Region / Region")
-            stato_civile = st.selectbox(get_testo("stato_civile", st.session_state.lingua), [
-                get_testo("celibe", st.session_state.lingua),
-                get_testo("coniugato", st.session_state.lingua),
-                get_testo("divorziato", st.session_state.lingua),
-                get_testo("vedovo", st.session_state.lingua)
-            ])
+                regione_straniera = st.text_input("Department / Region / Region")
+                dipartimento = f"{paese} - {regione_straniera}"
+            telefono = st.text_input(get_testo("telefono", st.session_state.lingua))
+            telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua))
+            cni = st.text_input(get_testo("cni", st.session_state.lingua))
+            css = st.text_input(get_testo("css", st.session_state.lingua))
+            ipres = st.text_input(get_testo("ipres", st.session_state.lingua))
             figli = st.number_input(get_testo("figli", st.session_state.lingua), min_value=0, value=0)
         
             with col2:
