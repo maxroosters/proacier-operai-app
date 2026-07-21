@@ -726,22 +726,22 @@ def pagina_registrazione():
                 ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", "Altro / Other"],
                 index=0, key="reg_paese")
             
-            if paese == "Sénégal":
-                dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
-                    get_testo("thies", st.session_state.lingua),
-                    get_testo("tivaouane", st.session_state.lingua),
-                    get_testo("mbour", st.session_state.lingua),
-                    "Dakar", "Saint-Louis", "Ziguinchor", "Kolda", "Tambacounda",
-                    "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
-                    get_testo("altro", st.session_state.lingua)
-                ], key="reg_dipartimento")
-            elif paese == "Altro / Other":
-                paese_altro = st.text_input(get_testo("paese_altro", st.session_state.lingua), key="reg_paese_altro")
-                dipartimento = paese_altro if paese_altro else "Altro"
-            else:
-                regione_straniera = st.text_input(get_testo("regione", st.session_state.lingua), key="reg_regione")
-                dipartimento = f"{paese} - {regione_straniera}" if regione_straniera else paese
-            
+        if paese == "Sénégal":
+            dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
+                get_testo("thies", st.session_state.lingua),
+                get_testo("tivaouane", st.session_state.lingua),
+                get_testo("mbour", st.session_state.lingua),
+                "Dakar", "Saint-Louis", "Ziguinchor", "Kolda", "Tambacounda",
+                "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
+                get_testo("altro", st.session_state.lingua)
+            ], key="reg_dipartimento")
+        elif paese == "Altro / Other":
+            paese_altro = st.text_input(get_testo("paese_altro", st.session_state.lingua), key="reg_paese_altro")
+            dipartimento = paese_altro if paese_altro else "Altro"
+        else:
+            regione_straniera = st.text_input(get_testo("regione", st.session_state.lingua), key="reg_regione")
+            dipartimento = f"{paese} - {regione_straniera}" if regione_straniera else paese
+    
             telefono = st.text_input(get_testo("telefono", st.session_state.lingua), key="reg_telefono")
             telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua), key="reg_telefono2")
             cni = st.text_input(get_testo("cni", st.session_state.lingua), key="reg_cni")
