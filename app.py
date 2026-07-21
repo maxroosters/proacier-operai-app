@@ -713,14 +713,25 @@ def pagina_registrazione():
     with st.form("form_registrazione", clear_on_submit=False):
         col1, col2 = st.columns(2)
         
-        with col1:
-            st.subheader(get_testo("dati_anagrafici", st.session_state.lingua))
-            cognome = st.text_input(get_testo("cognome", st.session_state.lingua))
-            nome = st.text_input(get_testo("nome", st.session_state.lingua))
-            data_nascita = st.date_input(get_testo("data_nascita", st.session_state.lingua))
-            luogo_nascita = st.text_input(get_testo("luogo_nascita", st.session_state.lingua))
-            nazionalita = st.text_input(get_testo("nazionalita", st.session_state.lingua), value="Sénégalaise")
-            sesso = st.selectbox(get_testo("sesso", st.session_state.lingua), [get_testo("maschile", st.session_state.lingua), get_testo("femminile", st.session_state.lingua)])
+    with col2:
+            st.subheader(get_testo("documenti", st.session_state.lingua))
+            indirizzo = st.text_input(get_testo("indirizzo", st.session_state.lingua))
+            quartiere = st.text_input(get_testo("quartiere", st.session_state.lingua))
+            comune = st.text_input(get_testo("comune", st.session_state.lingua))
+            paese = st.selectbox("Country / Pays / Paese", 
+                ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", "Altro / Other"],
+                index=0)
+            if paese == "Sénégal":
+                dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
+                    get_testo("thies", st.session_state.lingua),
+                    get_testo("tivaouane", st.session_state.lingua),
+                    get_testo("mbour", st.session_state.lingua),
+                    "Dakar", "Saint-Louis", "Ziguinchor", "Kolda", "Tambacounda",
+                    "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
+                    get_testo("altro", st.session_state.lingua)
+                ])
+            else:
+                dipartimento = st.text_input("Department / Region / Region")
             stato_civile = st.selectbox(get_testo("stato_civile", st.session_state.lingua), [
                 get_testo("celibe", st.session_state.lingua),
                 get_testo("coniugato", st.session_state.lingua),
