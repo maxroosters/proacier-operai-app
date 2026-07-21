@@ -639,14 +639,14 @@ def main():
         st.markdown(get_testo("sottotitolo", st.session_state.lingua))
         st.markdown("---")
         
-        # Selettore lingua
+    # Selettore lingua
         lingua_sel = st.selectbox(
-    get_testo("lingua", st.session_state.lingua),
-    ["English", "Français", "Italiano"],
-    index=0 if st.session_state.lingua == 'en' else (1 if st.session_state.lingua == 'fr' else 2)
-)
-st.session_state.lingua = 'en' if lingua_sel == "English" else ('fr' if lingua_sel == "Français" else 'it')
-        
+            get_testo("lingua", st.session_state.lingua),
+            ["English", "Français", "Italiano"],
+            index=0 if st.session_state.lingua == 'en' else (1 if st.session_state.lingua == 'fr' else 2)
+        )
+        st.session_state.lingua = 'en' if lingua_sel == "English" else ('fr' if lingua_sel == "Français" else 'it')
+
         st.markdown("---")
         
         # Menu navigazione
