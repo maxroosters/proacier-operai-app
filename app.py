@@ -740,7 +740,7 @@ def pagina_registrazione():
             ipres = st.text_input(get_testo("ipres", st.session_state.lingua))
             figli = st.number_input(get_testo("figli", st.session_state.lingua), min_value=0, value=0)
         
-            with col2:
+        with col2:
             st.subheader(get_testo("documenti", st.session_state.lingua))
             indirizzo = st.text_input(get_testo("indirizzo", st.session_state.lingua))
             quartiere = st.text_input(get_testo("quartiere", st.session_state.lingua))
@@ -748,7 +748,7 @@ def pagina_registrazione():
             paese = st.selectbox("Country / Pays / Paese", 
                 ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", "Altro / Other"],
                 index=0)
-            if paese == "Sénégal":
+        if paese == "Sénégal":
                 dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
                     get_testo("thies", st.session_state.lingua),
                     get_testo("tivaouane", st.session_state.lingua),
@@ -757,7 +757,7 @@ def pagina_registrazione():
                     "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
                     get_testo("altro", st.session_state.lingua)
                 ])
-            else:
+        else:
                 dipartimento = st.text_input("Department / Region / Region")
             telefono = st.text_input(get_testo("telefono", st.session_state.lingua))
             telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua))
