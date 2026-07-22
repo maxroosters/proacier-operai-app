@@ -2,17 +2,14 @@
 """
 PROACIER - Sistema di Gestione Operai
 Senegal - Regione di Thiès
-Versione 1.1 - 2026
+Versione 1.2 - 2026
 """
 
 import streamlit as st
 import requests
-import json
 from datetime import datetime
 import random
 from fpdf import FPDF
-import base64
-from io import BytesIO
 
 # ============================================
 # CONFIGURAZIONE PAGINA
@@ -25,17 +22,14 @@ st.set_page_config(
 )
 
 # ============================================
-# CONFIGURAZIONE - DA MODIFICARE
+# CONFIGURAZIONE SICURA
 # ============================================
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLn6HNH_k_Az2Mtfx-2SFwy0TH9tb8ygXRSXYrDKfbHcjzxXcK1f3Z3TXfhOBhKnHi/exec"
-
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/XXXXXXXXXX/exec"
 EMAIL_NOTIFICA = "proacier.sn@gmail.com"
-
-import streamlit as st
-PASSWORD_DASHBOARD = st.secrets["dashboard_password"]
+PASSWORD_DASHBOARD = st.secrets.get("dashboard_password", "admin123")
 
 # ============================================
-# TRADUZIONI
+# TRADUZIONI COMPLETE
 # ============================================
 TRADUZIONI = {
     "it": {
@@ -44,8 +38,8 @@ TRADUZIONI = {
         "menu": "Menu",
         "registrazione": "📝 Nuova Registrazione",
         "area_lavoratore": "👤 Area Lavoratore",
-        "dashboard": " Dashboard Azienda",
-        "lingua": " Lingua",
+        "dashboard": "🏢 Dashboard Azienda",
+        "lingua": "🌐 Lingua",
         "benvenuto": "Benvenuto",
         "logout": "Esci",
         "codice": "Codice Operatore",
@@ -54,21 +48,13 @@ TRADUZIONI = {
         "password": "Password",
         "dashboard_titolo": "DASHBOARD AZIENDA",
         "totale_operai": "Totale Operai",
-        "nuovi_oggi": "Nuovi Oggi",
-        "da_firmare": "Da Firmare",
-        "modifiche_pendenti": "Modifiche Pendenti",
         "cerca": "Cerca operatore...",
         "scarica_pdf": "Scarica PDF",
-        "vedi_dati": "Vedi Dati",
         "nessun_risultato": "Nessun operatore trovato",
-        "caricamento": "Caricamento...",
-        "successo": "Operazione riuscita!",
-        "errore": "Errore",
         "codice_errato": "Codice o PIN errati",
         "benvenuto_lavoratore": "Benvenuto",
         "i_miei_dati": "I Miei Dati",
-        "modifica_dati": "Modifica Dati",
-        "salva": "Salva Modifiche",
+        "salva": "Salva",
         "indietro": "Indietro",
         "registra": "REGISTRAZIONE OPERAIO",
         "dati_anagrafici": "Dati Anagrafici",
@@ -90,15 +76,17 @@ TRADUZIONI = {
         "coniugato": "Coniugato/a",
         "divorziato": "Divorziato/a",
         "vedovo": "Vedovo/a",
+        "numero_mogli": "Numero di mogli",
         "figli": "Figli a carico",
         "indirizzo": "Indirizzo",
         "quartiere": "Quartiere/Villaggio",
         "comune": "Comune/Arrondissement",
-        "dipartimento": "Dipartimento",
+        "paese": "Paese",
+        "dipartimento": "Dipartimento/Regione",
         "thies": "Thiès",
         "tivaouane": "Tivaouane",
         "mbour": "Mbour",
-        "altro": "Altro",
+        "altro": "Altro / Other",
         "telefono": "Telefono",
         "telefono2": "Telefono secondario",
         "cni": "Numero CNI",
@@ -135,18 +123,15 @@ TRADUZIONI = {
         "emergenza_parentela": "Parentela",
         "emergenza_tel": "Telefono emergenza",
         "emergenza_indirizzo": "Indirizzo emergenza",
-        "genera_pdf": "Genera PDF e Registra",
+        "genera_pdf": "📄 Genera PDF e Registra",
         "pdf_generato": "PDF generato con successo!",
-        "id_operatore": "ID Operatore",
-        "conserva_credenziali": "CONSERVA QUESTE CREDENZIALI",
+        "conserva_credenziali": "️ CONSERVA QUESTE CREDENZIALI",
         "codice_accesso": "Codice di accesso",
         "pin_accesso": "PIN di accesso",
         "scarica": "Scarica",
         "firma": "Far firmare al lavoratore",
-        "paese": "Paese",
-        "regione": "Regione/Dipartimento",
         "paese_altro": "Inserisci nome Paese",
-        "contatto_errore": "Contattare l'amministrazione",
+        "regione": "Regione/Dipartimento",
         "lista_operai": "Lista Operai",
         "cognome_nome": "Cognome e Nome",
         "telefono_col": "Telefono",
@@ -155,11 +140,11 @@ TRADUZIONI = {
     },
     "fr": {
         "titolo": "🏭 PROACIER - GESTION OUVRIERS",
-        "sottotitolo": "Système d'enregistrement des ouvriers - Sénégal",
+        "sottotitolo": "Système d'enregistrement - Sénégal",
         "menu": "Menu",
         "registrazione": "📝 Nouvelle Inscription",
         "area_lavoratore": "👤 Espace Ouvrier",
-        "dashboard": "🏢 Tableau de Bord",
+        "dashboard": " Tableau de Bord",
         "lingua": "🌐 Langue",
         "benvenuto": "Bienvenue",
         "logout": "Déconnexion",
@@ -167,23 +152,15 @@ TRADUZIONI = {
         "pin": "PIN",
         "accedi": "Accéder",
         "password": "Mot de passe",
-        "dashboard_titolo": "TABLEAU DE BORD ENTREPRISE",
+        "dashboard_titolo": "TABLEAU DE BORD",
         "totale_operai": "Total Ouvriers",
-        "nuovi_oggi": "Nouveaux Aujourd'hui",
-        "da_firmare": "À Signer",
-        "modifiche_pendenti": "Modifications en Attente",
-        "cerca": "Rechercher un ouvrier...",
+        "cerca": "Rechercher...",
         "scarica_pdf": "Télécharger PDF",
-        "vedi_dati": "Voir Données",
         "nessun_risultato": "Aucun ouvrier trouvé",
-        "caricamento": "Chargement...",
-        "successo": "Opération réussie!",
-        "errore": "Erreur",
         "codice_errato": "Code ou PIN incorrect",
         "benvenuto_lavoratore": "Bienvenue",
         "i_miei_dati": "Mes Données",
-        "modifica_dati": "Modifier Données",
-        "salva": "Enregistrer Modifications",
+        "salva": "Enregistrer",
         "indietro": "Retour",
         "registra": "ENREGISTREMENT OUVRIER",
         "dati_anagrafici": "Données Personnelles",
@@ -205,15 +182,17 @@ TRADUZIONI = {
         "coniugato": "Marié(e)",
         "divorziato": "Divorcé(e)",
         "vedovo": "Veuf/Veuve",
+        "numero_mogli": "Nombre d'épouses",
         "figli": "Enfants à charge",
         "indirizzo": "Adresse",
         "quartiere": "Quartier/Village",
         "comune": "Commune/Arrondissement",
-        "dipartimento": "Département",
+        "paese": "Pays",
+        "dipartimento": "Département/Région",
         "thies": "Thiès",
         "tivaouane": "Tivaouane",
         "mbour": "Mbour",
-        "altro": "Autre",
+        "altro": "Autre / Other",
         "telefono": "Téléphone",
         "telefono2": "Téléphone secondaire",
         "cni": "N° CNI",
@@ -250,18 +229,15 @@ TRADUZIONI = {
         "emergenza_parentela": "Lien de parenté",
         "emergenza_tel": "Téléphone urgence",
         "emergenza_indirizzo": "Adresse urgence",
-        "genera_pdf": "Générer PDF et Enregistrer",
+        "genera_pdf": "📄 Générer PDF et Enregistrer",
         "pdf_generato": "PDF généré avec succès!",
-        "id_operatore": "ID Ouvrier",
-        "conserva_credenziali": "CONSERVEZ CES IDENTIFIANTS",
+        "conserva_credenziali": "⚠️ CONSERVEZ CES IDENTIFIANTS",
         "codice_accesso": "Code d'accès",
         "pin_accesso": "PIN d'accès",
         "scarica": "Télécharger",
         "firma": "Faire signer à l'ouvrier",
-        "paese": "Pays",
-        "regione": "Région/Département",
         "paese_altro": "Entrez le nom du pays",
-        "contatto_errore": "Contacter l'administration",
+        "regione": "Région/Département",
         "lista_operai": "Liste Ouvriers",
         "cognome_nome": "Nom et Prénom",
         "telefono_col": "Téléphone",
@@ -272,7 +248,7 @@ TRADUZIONI = {
         "titolo": "🏭 PROACIER - WORKER MANAGEMENT",
         "sottotitolo": "Worker registration system - Senegal",
         "menu": "Menu",
-        "registrazione": "📝 New Registration",
+        "registrazione": " New Registration",
         "area_lavoratore": "👤 Worker Area",
         "dashboard": "🏢 Company Dashboard",
         "lingua": "🌐 Language",
@@ -284,21 +260,13 @@ TRADUZIONI = {
         "password": "Password",
         "dashboard_titolo": "COMPANY DASHBOARD",
         "totale_operai": "Total Workers",
-        "nuovi_oggi": "New Today",
-        "da_firmare": "To Sign",
-        "modifiche_pendenti": "Pending Changes",
         "cerca": "Search worker...",
         "scarica_pdf": "Download PDF",
-        "vedi_dati": "View Data",
         "nessun_risultato": "No worker found",
-        "caricamento": "Loading...",
-        "successo": "Operation successful!",
-        "errore": "Error",
         "codice_errato": "Wrong code or PIN",
         "benvenuto_lavoratore": "Welcome",
         "i_miei_dati": "My Data",
-        "modifica_dati": "Edit Data",
-        "salva": "Save Changes",
+        "salva": "Save",
         "indietro": "Back",
         "registra": "WORKER REGISTRATION",
         "dati_anagrafici": "Personal Data",
@@ -320,15 +288,17 @@ TRADUZIONI = {
         "coniugato": "Married",
         "divorziato": "Divorced",
         "vedovo": "Widowed",
+        "numero_mogli": "Number of wives",
         "figli": "Dependent children",
         "indirizzo": "Address",
         "quartiere": "District/Village",
         "comune": "Municipality",
-        "dipartimento": "Department",
+        "paese": "Country",
+        "dipartimento": "Department/Region",
         "thies": "Thiès",
         "tivaouane": "Tivaouane",
         "mbour": "Mbour",
-        "altro": "Other",
+        "altro": "Other / Altro",
         "telefono": "Phone",
         "telefono2": "Secondary phone",
         "cni": "ID Number",
@@ -365,18 +335,15 @@ TRADUZIONI = {
         "emergenza_parentela": "Relationship",
         "emergenza_tel": "Emergency phone",
         "emergenza_indirizzo": "Emergency address",
-        "genera_pdf": "Generate PDF and Register",
+        "genera_pdf": "📄 Generate PDF and Register",
         "pdf_generato": "PDF generated successfully!",
-        "id_operatore": "Worker ID",
-        "conserva_credenziali": "SAVE THESE CREDENTIALS",
+        "conserva_credenziali": "⚠️ SAVE THESE CREDENTIALS",
         "codice_accesso": "Access code",
         "pin_accesso": "Access PIN",
         "scarica": "Download",
         "firma": "Have the worker sign",
-        "paese": "Country",
-        "regione": "Region/Department",
         "paese_altro": "Enter country name",
-        "contatto_errore": "Contact administration",
+        "regione": "Region/Department",
         "lista_operai": "Workers List",
         "cognome_nome": "Full Name",
         "telefono_col": "Phone",
@@ -390,51 +357,34 @@ TRADUZIONI = {
 # ============================================
 
 def get_testo(chiave, lingua="fr"):
-    """Ottiene il testo tradotto"""
     return TRADUZIONI.get(lingua, TRADUZIONI["fr"]).get(chiave, chiave)
 
 def genera_codice():
-    """Genera codice operatore univoco"""
     anno = datetime.now().year
     numero = random.randint(1000, 9999)
     return f"THS-{anno}-{numero}"
 
 def genera_pin():
-    """Genera PIN a 4 cifre"""
     return str(random.randint(1000, 9999))
 
-def invia_email_notifica(dati_lavoratore, tipo="registrazione"):
-    """Invia email di notifica (placeholder)"""
-    return True
-
 def salva_su_google_sheet(dati, azione="append"):
-    """Salva dati su Google Sheets tramite Apps Script"""
     try:
         if azione == "append":
             payload = {"row": dati}
-        elif azione == "update":
-            payload = {"id": dati.get("id"), "updates": dati}
-        
-        response = requests.post(
-            GOOGLE_SCRIPT_URL,
-            json=payload,
-            headers={"Content-Type": "application/json"}
-        )
+        response = requests.post(GOOGLE_SCRIPT_URL, json=payload, headers={"Content-Type": "application/json"})
         return response.status_code == 200
     except Exception as e:
-        st.error(f"Errore connessione Google Sheets: {e}")
+        st.error(f"Errore Google Sheets: {e}")
         return False
 
 def leggi_da_google_sheet():
-    """Legge tutti i dati da Google Sheets"""
     try:
         response = requests.get(f"{GOOGLE_SCRIPT_URL}?action=read")
         if response.status_code == 200:
-            dati = response.json()
-            return dati
+            return response.json()
         return []
     except Exception as e:
-        st.error(f"Errore lettura Google Sheets: {e}")
+        st.error(f"Errore lettura: {e}")
         return []
 
 # ============================================
@@ -454,7 +404,7 @@ class PDFProacier(FPDF):
         self.set_y(-15)
         self.set_font('Helvetica', 'I', 8)
         self.set_text_color(128, 128, 128)
-        self.cell(0, 10, f'Page {self.page_no()}/{{nb}} - Genere le {datetime.now().strftime("%d/%m/%Y")}', 0, 0, 'C')
+        self.cell(0, 10, f'Page {self.page_no()}/{{nb}}', 0, 0, 'C')
     
     def sezione(self, titolo):
         self.set_font('Helvetica', 'B', 11)
@@ -479,7 +429,6 @@ class PDFProacier(FPDF):
         self.cell(0, 7, str(val2) if val2 else "______", 0, 1)
 
 def genera_pdf_lavoratore(dati):
-    """Genera PDF completo del lavoratore"""
     pdf = PDFProacier()
     pdf.alias_nb_pages()
     pdf.add_page()
@@ -494,8 +443,10 @@ def genera_pdf_lavoratore(dati):
     pdf.campo_doppio("Date naissance:", dati.get('data_nascita', ''), "Lieu:", dati.get('luogo_nascita', ''))
     pdf.campo_doppio("Nationalite:", dati.get('nazionalita', ''), "Sexe:", dati.get('sesso', ''))
     pdf.campo_doppio("Etat civil:", dati.get('stato_civile', ''), "Enfants:", dati.get('figli', ''))
+    if dati.get('numero_mogli', 0) > 0:
+        pdf.campo("Nombre d'epouses:", dati.get('numero_mogli', ''))
     pdf.campo("Adresse:", f"{dati.get('indirizzo', '')} - {dati.get('quartiere', '')}")
-    pdf.campo("Commune:", f"{dati.get('comune', '')} - Pays: {dati.get('dipartimento', '')}")
+    pdf.campo("Pays:", dati.get('dipartimento', ''))
     pdf.campo_doppio("Telephone:", dati.get('telefono', ''), "Tel 2:", dati.get('telefono2', ''))
     pdf.ln(3)
     
@@ -533,7 +484,7 @@ def genera_pdf_lavoratore(dati):
     
     pdf.sezione("SECTION 7 - SIGNATURES")
     pdf.set_font('Helvetica', 'I', 9)
-    pdf.multi_cell(0, 5, "Je soussigne(e), reconnais avoir pris connaissance des conditions de travail et des consignes de securite.")
+    pdf.multi_cell(0, 5, "Je soussigne(e), reconnais avoir pris connaissance des conditions de travail.")
     pdf.ln(5)
     
     pdf.set_font('Helvetica', 'B', 10)
@@ -564,26 +515,15 @@ def genera_pdf_lavoratore(dati):
     pdf.ln(3)
     
     pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(0, 7, 'DONNEES DU TRAVAILLEUR:', 0, 1)
-    pdf.set_font('Helvetica', '', 9)
-    pdf.campo("Nom complet:", f"{dati.get('cognome', '')} {dati.get('nome', '')}")
-    pdf.campo("Date naissance:", dati.get('data_nascita', ''))
-    pdf.campo("CNI N°:", dati.get('cni', ''))
-    pdf.campo("Adresse:", f"{dati.get('indirizzo', '')}, {dati.get('quartiere', '')}")
-    pdf.campo("Telephone:", dati.get('telefono', ''))
-    pdf.ln(3)
-    
-    pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(0, 7, 'INFORMATIONS:', 0, 1)
     pdf.set_font('Helvetica', '', 9)
     
     info = [
-        "1. COLLECTE: Vos donnees sont collectees pour la gestion administrative (CSS, IPRES, contrat).",
-        "2. FINALITES: Paie, securite au travail (EPI), contacts d'urgence.",
+        "1. COLLECTE: Vos donnees sont collectees pour la gestion administrative.",
+        "2. FINALITES: Paie, securite au travail, contacts d'urgence.",
         "3. DUREE: Conservation 5 ans apres fin contrat.",
         "4. DROITS: Droit d'acces, rectification, suppression.",
-        "5. TIERS: Pas de communication sauf obligation legale.",
-        "6. AUTORITE: CDP - www.cdp.sn"
+        "5. AUTORITE: CDP - www.cdp.sn"
     ]
     
     for riga in info:
@@ -597,16 +537,13 @@ def genera_pdf_lavoratore(dati):
     
     pdf.set_font('Helvetica', '', 10)
     nome_completo = f"{dati.get('cognome', '')} {dati.get('nome', '')}"
-    pdf.multi_cell(0, 6, f"Je soussigne(e), {nome_completo}, donne mon consentement expres pour le traitement de mes donnees.")
+    pdf.multi_cell(0, 6, f"Je soussigne(e), {nome_completo}, donne mon consentement expres.")
     pdf.ln(8)
     
     pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(0, 7, 'Signature (precedee de "Lu et approuve"):', 0, 1)
+    pdf.cell(0, 7, 'Signature:', 0, 1)
     pdf.ln(2)
     pdf.cell(0, 30, '', 1, 1)
-    pdf.ln(3)
-    pdf.cell(95, 7, f"Fait a: _________________", 0, 0)
-    pdf.cell(0, 7, f"Le: {datetime.now().strftime('%d/%m/%Y')}", 0, 1, 'R')
     
     return pdf.output(dest='S').encode('latin-1')
 
@@ -635,7 +572,7 @@ def main():
             get_testo("lingua", st.session_state.lingua),
             ["English", "Français", "Italiano"],
             index=0 if st.session_state.lingua == 'en' else (1 if st.session_state.lingua == 'fr' else 2),
-            key="selectbox_lingua"
+            key="sel_lingua"
         )
         st.session_state.lingua = 'en' if lingua_sel == "English" else ('fr' if lingua_sel == "Français" else 'it')
         
@@ -646,12 +583,12 @@ def main():
                 st.success(f"{get_testo('benvenuto', st.session_state.lingua)} Admin")
                 if st.button(get_testo("dashboard", st.session_state.lingua), key="btn_dash"):
                     st.session_state.pagina = 'dashboard'
-                if st.button(get_testo("logout", st.session_state.lingua), key="btn_logout_admin"):
+                if st.button(get_testo("logout", st.session_state.lingua), key="btn_logout"):
                     st.session_state.logged_in = False
                     st.session_state.pagina = 'home'
             elif st.session_state.user_type == 'lavoratore':
-                st.success(f"{get_testo('benvenuto_lavoratore', st.session_state.lingua)} {st.session_state.user_data.get('nome', '')}")
-                if st.button(get_testo("i_miei_dati", st.session_state.lingua), key="btn_miei_dati"):
+                st.success(f"{get_testo('benvenuto_lavoratore', st.session_state.lingua)}")
+                if st.button(get_testo("i_miei_dati", st.session_state.lingua), key="btn_miei"):
                     st.session_state.pagina = 'area_lavoratore'
                 if st.button(get_testo("logout", st.session_state.lingua), key="btn_logout_lav"):
                     st.session_state.logged_in = False
@@ -665,17 +602,10 @@ def main():
                 st.session_state.pagina = 'login_admin'
     
     if st.session_state.pagina == 'home':
-        st.title("🏭 PROACIER SN")
+        st.title(" PROACIER SN")
         st.markdown("### Système de Gestion des Ouvriers")
         st.markdown("---")
-        st.info("👈 Utilisez le menu à gauche pour naviguer")
-        st.markdown("""
-        **Fonctionnalités:**
-        - 📝 Enregistrement des nouveaux ouvriers
-        - 👤 Espace personnel pour modifier ses données
-        - 🏢 Tableau de bord entreprise
-        - 📄 Génération automatique de PDF
-        """)
+        st.info(" Utilisez le menu à gauche")
     
     elif st.session_state.pagina == 'registrazione':
         pagina_registrazione()
@@ -693,7 +623,6 @@ def main():
         pagina_dashboard()
 
 def pagina_registrazione():
-    """Pagina di registrazione nuovo lavoratore"""
     st.title(get_testo("registra", st.session_state.lingua))
     
     with st.form("form_registrazione", clear_on_submit=False):
@@ -701,114 +630,121 @@ def pagina_registrazione():
         
         with col1:
             st.subheader(get_testo("dati_anagrafici", st.session_state.lingua))
-            cognome = st.text_input(get_testo("cognome", st.session_state.lingua), key="reg_cognome")
-            nome = st.text_input(get_testo("nome", st.session_state.lingua), key="reg_nome")
-            data_nascita = st.date_input(get_testo("data_nascita", st.session_state.lingua), key="reg_data_nascita")
-            luogo_nascita = st.text_input(get_testo("luogo_nascita", st.session_state.lingua), key="reg_luogo_nascita")
-            nazionalita = st.text_input(get_testo("nazionalita", st.session_state.lingua), value="Sénégalaise", key="reg_nazionalita")
+            cognome = st.text_input(get_testo("cognome", st.session_state.lingua), key="f_cognome")
+            nome = st.text_input(get_testo("nome", st.session_state.lingua), key="f_nome")
+            data_nascita = st.date_input(get_testo("data_nascita", st.session_state.lingua), key="f_data_nascita")
+            luogo_nascita = st.text_input(get_testo("luogo_nascita", st.session_state.lingua), key="f_luogo_nascita")
+            nazionalita = st.text_input(get_testo("nazionalita", st.session_state.lingua), value="Sénégalaise", key="f_nazionalita")
             sesso = st.selectbox(get_testo("sesso", st.session_state.lingua), 
                 [get_testo("maschile", st.session_state.lingua), get_testo("femminile", st.session_state.lingua)], 
-                key="reg_sesso")
+                key="f_sesso")
             stato_civile = st.selectbox(get_testo("stato_civile", st.session_state.lingua), [
                 get_testo("celibe", st.session_state.lingua),
                 get_testo("coniugato", st.session_state.lingua),
                 get_testo("divorziato", st.session_state.lingua),
                 get_testo("vedovo", st.session_state.lingua)
-            ], key="reg_stato_civile")
-            figli = st.number_input(get_testo("figli", st.session_state.lingua), min_value=0, value=0, key="reg_figli")
+            ], key="f_stato_civile")
+            
+            # Numero di mogli (solo se coniugato)
+            numero_mogli = 0
+            if stato_civile == get_testo("coniugato", st.session_state.lingua):
+                numero_mogli = st.number_input(get_testo("numero_mogli", st.session_state.lingua), 
+                    min_value=1, max_value=4, value=1, key="f_numero_mogli")
+            
+            figli = st.number_input(get_testo("figli", st.session_state.lingua), min_value=0, value=0, key="f_figli")
         
         with col2:
             st.subheader(get_testo("documenti", st.session_state.lingua))
-            indirizzo = st.text_input(get_testo("indirizzo", st.session_state.lingua), key="reg_indirizzo")
-            quartiere = st.text_input(get_testo("quartiere", st.session_state.lingua), key="reg_quartiere")
-            comune = st.text_input(get_testo("comune", st.session_state.lingua), key="reg_comune")
+            indirizzo = st.text_input(get_testo("indirizzo", st.session_state.lingua), key="f_indirizzo")
+            quartiere = st.text_input(get_testo("quartiere", st.session_state.lingua), key="f_quartiere")
+            comune = st.text_input(get_testo("comune", st.session_state.lingua), key="f_comune")
             
             paese = st.selectbox(get_testo("paese", st.session_state.lingua), 
-                ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", "Altro / Other"],
-                index=0, key="reg_paese")
+                ["Sénégal", "Sierra Leone", "Guinea", "Mali", "Gambia", get_testo("altro", st.session_state.lingua)],
+                index=0, key="f_paese")
             
-        if paese == "Sénégal":
-            dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
-                get_testo("thies", st.session_state.lingua),
-                get_testo("tivaouane", st.session_state.lingua),
-                get_testo("mbour", st.session_state.lingua),
-                "Dakar", "Saint-Louis", "Ziguinchor", "Kolda", "Tambacounda",
-                "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
-                get_testo("altro", st.session_state.lingua)
-            ], key="reg_dipartimento")
-        elif paese == "Altro / Other":
-            paese_altro = st.text_input(get_testo("paese_altro", st.session_state.lingua), key="reg_paese_altro")
-            dipartimento = paese_altro if paese_altro else "Altro"
-        else:
-            regione_straniera = st.text_input(get_testo("regione", st.session_state.lingua), key="reg_regione")
-            dipartimento = f"{paese} - {regione_straniera}" if regione_straniera else paese
-    
-            telefono = st.text_input(get_testo("telefono", st.session_state.lingua), key="reg_telefono")
-            telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua), key="reg_telefono2")
-            cni = st.text_input(get_testo("cni", st.session_state.lingua), key="reg_cni")
-            css = st.text_input(get_testo("css", st.session_state.lingua), key="reg_css")
-            ipres = st.text_input(get_testo("ipres", st.session_state.lingua), key="reg_ipres")
+            if paese == "Sénégal":
+                dipartimento = st.selectbox(get_testo("dipartimento", st.session_state.lingua), [
+                    get_testo("thies", st.session_state.lingua),
+                    get_testo("tivaouane", st.session_state.lingua),
+                    get_testo("mbour", st.session_state.lingua),
+                    "Dakar", "Saint-Louis", "Ziguinchor", "Kolda", "Tambacounda",
+                    "Kaolack", "Fatick", "Kédougou", "Kaffrine", "Louga", "Matam",
+                    get_testo("altro", st.session_state.lingua)
+                ], key="f_dipartimento")
+            elif paese == get_testo("altro", st.session_state.lingua):
+                paese_altro = st.text_input(get_testo("paese_altro", st.session_state.lingua), key="f_paese_altro")
+                dipartimento = paese_altro if paese_altro else "Autre"
+            else:
+                regione_straniera = st.text_input(get_testo("regione", st.session_state.lingua), key="f_regione")
+                dipartimento = f"{paese} - {regione_straniera}" if regione_straniera else paese
+            
+            telefono = st.text_input(get_testo("telefono", st.session_state.lingua), key="f_telefono")
+            telefono2 = st.text_input(get_testo("telefono2", st.session_state.lingua), key="f_telefono2")
+            cni = st.text_input(get_testo("cni", st.session_state.lingua), key="f_cni")
+            css = st.text_input(get_testo("css", st.session_state.lingua), key="f_css")
+            ipres = st.text_input(get_testo("ipres", st.session_state.lingua), key="f_ipres")
         
         st.subheader(get_testo("lavoro", st.session_state.lingua))
         col1, col2 = st.columns(2)
         with col1:
-            mansione = st.text_input(get_testo("mansione", st.session_state.lingua), key="reg_mansione")
-            luogo_lavoro = st.text_input(get_testo("luogo_lavoro", st.session_state.lingua), key="reg_luogo_lavoro")
-            reparto = st.text_input(get_testo("reparto", st.session_state.lingua), key="reg_reparto")
-            supervisore = st.text_input(get_testo("supervisore", st.session_state.lingua), key="reg_supervisore")
+            mansione = st.text_input(get_testo("mansione", st.session_state.lingua), key="f_mansione")
+            luogo_lavoro = st.text_input(get_testo("luogo_lavoro", st.session_state.lingua), key="f_luogo_lavoro")
+            reparto = st.text_input(get_testo("reparto", st.session_state.lingua), key="f_reparto")
+            supervisore = st.text_input(get_testo("supervisore", st.session_state.lingua), key="f_supervisore")
         with col2:
-            data_inizio = st.date_input(get_testo("data_inizio", st.session_state.lingua), key="reg_data_inizio")
-            salario = st.number_input(get_testo("salario", st.session_state.lingua), min_value=0, value=5000, key="reg_salario")
-            ore_giorno = st.number_input(get_testo("ore_giorno", st.session_state.lingua), min_value=1, max_value=24, value=8, key="reg_ore_giorno")
-            giorni_settimana = st.text_input(get_testo("giorni_settimana", st.session_state.lingua), value="Lun-Ven", key="reg_giorni_settimana")
+            data_inizio = st.date_input(get_testo("data_inizio", st.session_state.lingua), key="f_data_inizio")
+            salario = st.number_input(get_testo("salario", st.session_state.lingua), min_value=0, value=5000, key="f_salario")
+            ore_giorno = st.number_input(get_testo("ore_giorno", st.session_state.lingua), min_value=1, max_value=24, value=8, key="f_ore_giorno")
+            giorni_settimana = st.text_input(get_testo("giorni_settimana", st.session_state.lingua), value="Lun-Ven", key="f_giorni_settimana")
             pagamento = st.selectbox(get_testo("pagamento", st.session_state.lingua), [
                 get_testo("especes", st.session_state.lingua),
                 get_testo("virement", st.session_state.lingua),
                 get_testo("mobile", st.session_state.lingua)
-            ], key="reg_pagamento")
+            ], key="f_pagamento")
         
         st.subheader(get_testo("epi", st.session_state.lingua))
         col1, col2, col3 = st.columns(3)
         with col1:
             taglia_maglia = st.selectbox(get_testo("taglia_maglia", st.session_state.lingua), 
-                ["XS", "S", "M", "L", "XL", "XXL", "3XL"], key="reg_taglia_maglia")
+                ["XS", "S", "M", "L", "XL", "XXL", "3XL"], key="f_taglia_maglia")
             taglia_pantaloni = st.selectbox(get_testo("taglia_pantaloni", st.session_state.lingua), 
-                ["36", "38", "40", "42", "44", "46", "48", "50"], key="reg_taglia_pantaloni")
+                ["36", "38", "40", "42", "44", "46", "48", "50"], key="f_taglia_pantaloni")
             taglia_scarpe = st.selectbox(get_testo("taglia_scarpe", st.session_state.lingua), 
-                ["38", "39", "40", "41", "42", "43", "44", "45", "46"], key="reg_taglia_scarpe")
+                ["38", "39", "40", "41", "42", "43", "44", "45", "46"], key="f_taglia_scarpe")
         with col2:
             taglia_guanti = st.selectbox(get_testo("taglia_guanti", st.session_state.lingua), 
-                ["S", "M", "L", "XL"], key="reg_taglia_guanti")
+                ["S", "M", "L", "XL"], key="f_taglia_guanti")
             taglia_casco = st.selectbox(get_testo("taglia_casco", st.session_state.lingua), 
-                ["Standard", "Ajustable"], key="reg_taglia_casco")
+                ["Standard", "Ajustable"], key="f_taglia_casco")
             taglia_gilet = st.selectbox(get_testo("taglia_gilet", st.session_state.lingua), 
-                ["S", "M", "L", "XL", "XXL"], key="reg_taglia_gilet")
+                ["S", "M", "L", "XL", "XXL"], key="f_taglia_gilet")
         
         st.subheader(get_testo("medico", st.session_state.lingua))
         col1, col2 = st.columns(2)
         with col1:
             gruppo_sanguigno = st.selectbox(get_testo("gruppo_sanguigno", st.session_state.lingua), 
-                ["A", "B", "AB", "O"], key="reg_gruppo_sanguigno")
+                ["A", "B", "AB", "O"], key="f_gruppo_sanguigno")
             rh = st.selectbox(get_testo("rh", st.session_state.lingua), 
-                ["+", "-"], key="reg_rh")
-            allergie = st.text_area(get_testo("allergie", st.session_state.lingua), key="reg_allergie")
+                ["+", "-"], key="f_rh")
+            allergie = st.text_area(get_testo("allergie", st.session_state.lingua), key="f_allergie")
         with col2:
-            malattie = st.text_area(get_testo("malattie", st.session_state.lingua), key="reg_malattie")
+            malattie = st.text_area(get_testo("malattie", st.session_state.lingua), key="f_malattie")
             idoneita = st.selectbox(get_testo("idoneita", st.session_state.lingua), [
                 get_testo("apte", st.session_state.lingua),
                 get_testo("restriction", st.session_state.lingua),
                 get_testo("inapte", st.session_state.lingua)
-            ], key="reg_idoneita")
-            data_visita = st.date_input(get_testo("data_visita", st.session_state.lingua), key="reg_data_visita")
+            ], key="f_idoneita")
+            data_visita = st.date_input(get_testo("data_visita", st.session_state.lingua), key="f_data_visita")
         
         st.subheader(get_testo("emergenza", st.session_state.lingua))
         col1, col2 = st.columns(2)
         with col1:
-            emergenza_nome = st.text_input(get_testo("emergenza_nome", st.session_state.lingua), key="reg_emergenza_nome")
-            emergenza_parentela = st.text_input(get_testo("emergenza_parentela", st.session_state.lingua), key="reg_emergenza_parentela")
+            emergenza_nome = st.text_input(get_testo("emergenza_nome", st.session_state.lingua), key="f_emergenza_nome")
+            emergenza_parentela = st.text_input(get_testo("emergenza_parentela", st.session_state.lingua), key="f_emergenza_parentela")
         with col2:
-            emergenza_tel = st.text_input(get_testo("emergenza_tel", st.session_state.lingua), key="reg_emergenza_tel")
-            emergenza_indirizzo = st.text_input(get_testo("emergenza_indirizzo", st.session_state.lingua), key="reg_emergenza_indirizzo")
+            emergenza_tel = st.text_input(get_testo("emergenza_tel", st.session_state.lingua), key="f_emergenza_tel")
+            emergenza_indirizzo = st.text_input(get_testo("emergenza_indirizzo", st.session_state.lingua), key="f_emergenza_indirizzo")
         
         submitted = st.form_submit_button(get_testo("genera_pdf", st.session_state.lingua), type="primary", use_container_width=True)
         
@@ -832,6 +768,7 @@ def pagina_registrazione():
                 "nazionalita": nazionalita,
                 "sesso": sesso,
                 "stato_civile": stato_civile,
+                "numero_mogli": numero_mogli,
                 "figli": figli,
                 "indirizzo": indirizzo,
                 "quartiere": quartiere,
@@ -876,7 +813,7 @@ def pagina_registrazione():
                 
                 pdf_bytes = genera_pdf_lavoratore(dati)
                 
-                st.warning(f"⚠️ {get_testo('conserva_credenziali', st.session_state.lingua)}")
+                st.warning(get_testo('conserva_credenziali', st.session_state.lingua))
                 col1, col2 = st.columns(2)
                 with col1:
                     st.info(f"**{get_testo('codice_accesso', st.session_state.lingua)}:** {codice}")
@@ -884,22 +821,19 @@ def pagina_registrazione():
                     st.info(f"**{get_testo('pin_accesso', st.session_state.lingua)}:** {pin}")
                 
                 st.download_button(
-                    label=f" {get_testo('scarica', st.session_state.lingua)} PDF",
+                    label=f"📥 {get_testo('scarica', st.session_state.lingua)} PDF",
                     data=pdf_bytes,
                     file_name=f"Proacier_{codice}_{cognome}.pdf",
                     mime="application/pdf",
                     use_container_width=True,
-                    key="btn_download_pdf"
+                    key="btn_download"
                 )
                 
                 st.success(f"ℹ️ {get_testo('firma', st.session_state.lingua)}")
-                
-                invia_email_notifica(dati, "registrazione")
             else:
-                st.error("Erreur lors de l'enregistrement. Vérifiez la configuration Google Sheets.")
+                st.error("Erreur lors de l'enregistrement.")
 
 def pagina_login_lavoratore():
-    """Login area lavoratore"""
     st.title(get_testo("area_lavoratore", st.session_state.lingua))
     
     codice = st.text_input(get_testo("codice", st.session_state.lingua), key="login_codice")
@@ -927,41 +861,19 @@ def pagina_login_lavoratore():
             st.error(get_testo("codice_errato", st.session_state.lingua))
 
 def pagina_area_lavoratore():
-    """Area personale lavoratore"""
     st.title(get_testo("i_miei_dati", st.session_state.lingua))
     
     if not st.session_state.user_data:
         st.error("Non sei loggato")
         return
     
-    codice = st.session_state.user_data.get('codice')
-    
-    dati_lavoratori = leggi_da_google_sheet()
-    dati_miei = None
-    
-    for row in dati_lavoratori[1:]:
-        if len(row) >= 2 and str(row[1]) == codice:
-            dati_miei = row
-            break
-    
-    if dati_miei:
-        nome_completo = f"{dati_miei[4] if len(dati_miei) > 4 else ''} {dati_miei[3] if len(dati_miei) > 3 else ''}"
-        st.info(f"{get_testo('benvenuto_lavoratore', st.session_state.lingua)} {nome_completo}")
-        
-        st.write(f"**{get_testo('telefono', st.session_state.lingua)}:** {dati_miei[16] if len(dati_miei) > 16 else ''}")
-        st.write(f"**{get_testo('figli', st.session_state.lingua)}:** {dati_miei[11] if len(dati_miei) > 11 else ''}")
-        st.write(f"**{get_testo('taglia_maglia', st.session_state.lingua)}:** {dati_miei[30] if len(dati_miei) > 30 else ''}")
-        st.write(f"**{get_testo('taglia_scarpe', st.session_state.lingua)}:** {dati_miei[32] if len(dati_miei) > 32 else ''}")
-        
-        st.warning(get_testo("contatto_errore", st.session_state.lingua))
-    else:
-        st.error("Dati non trovati")
+    st.info(f"{get_testo('benvenuto_lavoratore', st.session_state.lingua)} {st.session_state.user_data.get('nome', '')}")
+    st.warning("Per modifiche, contattare l'amministrazione")
 
 def pagina_login_admin():
-    """Login admin"""
     st.title(get_testo("dashboard", st.session_state.lingua))
     
-    password = st.text_input(get_testo("password", st.session_state.lingua), type="password", key="login_admin_pwd")
+    password = st.text_input(get_testo("password", st.session_state.lingua), type="password", key="login_pwd")
     
     if st.button(get_testo("accedi", st.session_state.lingua), type="primary", key="btn_login_admin"):
         if password == PASSWORD_DASHBOARD:
@@ -973,7 +885,6 @@ def pagina_login_admin():
             st.error("Password errata")
 
 def pagina_dashboard():
-    """Dashboard admin"""
     st.title(get_testo("dashboard_titolo", st.session_state.lingua))
     
     dati_lavoratori = leggi_da_google_sheet()
@@ -983,12 +894,11 @@ def pagina_dashboard():
         
         col1, col2, col3, col4 = st.columns(4)
         col1.metric(get_testo("totale_operai", st.session_state.lingua), totale)
-        col2.metric(get_testo("nuovi_oggi", st.session_state.lingua), 0)
-        col3.metric(get_testo("da_firmare", st.session_state.lingua), 0)
-        col4.metric(get_testo("modifiche_pendenti", st.session_state.lingua), 0)
+        col2.metric("Nuovi oggi", 0)
+        col3.metric("Da firmare", 0)
+        col4.metric("Modifiche", 0)
         
         st.markdown("---")
-        
         st.subheader(get_testo("lista_operai", st.session_state.lingua))
         
         import pandas as pd
@@ -996,16 +906,13 @@ def pagina_dashboard():
             headers = dati_lavoratori[0]
             df = pd.DataFrame(dati_lavoratori[1:], columns=headers)
             
-            cerca = st.text_input(get_testo("cerca", st.session_state.lingua), key="dashboard_cerca")
+            cerca = st.text_input(get_testo("cerca", st.session_state.lingua), key="dash_cerca")
             if cerca:
                 df = df[df['Cognome'].astype(str).str.contains(cerca, case=False, na=False)]
             
-            colonne_mostra = ['ID', 'Cognome', 'Nome', 'Telefono', 'Mansione', 'Stato_Firma']
-            colonne_esistenti = [c for c in colonne_mostra if c in df.columns]
+            colonne = ['ID', 'Cognome', 'Nome', 'Telefono', 'Mansione', 'Stato_Firma']
+            colonne_esistenti = [c for c in colonne if c in df.columns]
             st.dataframe(df[colonne_esistenti], use_container_width=True)
-            
-            if st.button("Scarica tutti i PDF", key="btn_scarica_tutti"):
-                st.info("Funzione in sviluppo")
         else:
             st.warning(get_testo("nessun_risultato", st.session_state.lingua))
     else:
