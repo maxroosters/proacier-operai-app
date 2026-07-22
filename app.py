@@ -31,7 +31,8 @@ GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLn6HNH_k_Az2Mtfx-
 
 EMAIL_NOTIFICA = "proacier.sn@gmail.com"
 
-PASSWORD_DASHBOARD = "Proacier2026"
+import streamlit as st
+PASSWORD_DASHBOARD = st.secrets["dashboard_password"]
 
 # ============================================
 # TRADUZIONI
