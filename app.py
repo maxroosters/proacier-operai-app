@@ -24,8 +24,8 @@ st.set_page_config(
 # ============================================
 # CONFIGURAZIONE SICURA
 # ============================================
-GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/XXXXXXXXXX/exec"
-EMAIL_NOTIFICA = "proacier.sn@gmail.com"
+GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwLn6HNH_k_Az2Mtfx-2SFwy0TH9tb8ygXRSXYrDKfbHcjzxXcK1f3Z3TXfhOBhKnHi/exec"
+EMAIL_NOTIFICA = "m.galli@proacier.sn"
 PASSWORD_DASHBOARD = st.secrets.get("dashboard_password", "admin123")
 
 # ============================================
